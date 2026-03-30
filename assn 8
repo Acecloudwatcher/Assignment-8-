@@ -122,3 +122,53 @@ def main():
 if __name__ == '__main__':
     main()
 
+"Smokeyblurimage"
+from functools import reduce
+from image_lib import Image
+
+def blur(image):
+    """
+    Returns a new Image that is a blurred version of the original.
+    Each pixel's RGB values are replaced by the average of itself
+    and its (up to 8) neighboring pixels — a standard box blur.
+    """
+    width  = image.getWidth()
+    height = image.getHeight()
+
+    new_image = Image(width, height)
+
+    for row in range(height):
+        for col in range(width):
+
+            # Collect this pixel and all valid neighbors
+            neighbors = []
+            for dr in [-1, 0, 1]:
+                for dc in [-1, 0, 1]:
+                    r = row + dr
+                    c = col + dc
+                    if 0 <= r < height and 0 <= c < width:
+                        neighbors.append(image.getPixel(c, r))
+
+            # Average each channel across all neighbors
+            total = len(neighbors)
+            avg_r = reduce(lambda acc, p: acc + p[0], neighbors, 0) // total
+            avg_g = reduce(lambda acc, p: acc + p[1], neighbors, 0) // total
+            avg_b = reduce(lambda acc, p: acc + p[2], neighbors, 0) // total
+
+            new_image.setPixel(col, row, (avg_r, avg_g, avg_b))
+
+    return new_image
+
+
+def main():
+    my_image = Image("smokey.gif")
+
+    # Blur the image
+    blurred = blur(my_image)
+
+    # Save blurred image as PNG (supports full color, avoids GIF 256-color limit)
+    blurred.save("smokey_blurred.png")
+
+
+if __name__ == "__main__":
+    main()
